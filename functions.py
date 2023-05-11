@@ -23,8 +23,9 @@ On=True
 Off=False
 
 
-#radio setup
-#mode = False for TX or True for RX
+def initSeqNum():
+  global seq_num
+  seq_num = 0x00
 
 radio = RF24(22, 0)
 
@@ -56,7 +57,7 @@ def radioPowerOff():
   radio.power = False
   
 def rx():
-  expected_seq_num = 0x00
+  global seq_num
   eof = False
   payload = []
   received_packets = 0
@@ -73,16 +74,16 @@ def rx():
             buffer = radio.read()
             fragment = struct.unpack("<B31s",buffer)
             #print(fragment)
-            if fragment[0] == expected_seq_num:
+            if fragment[0] == seq_num:
                 if fragment == EOF1 or fragment == EOF2:
                   eof = True
                 if not eof:
                   for i in range(len(fragment)-1):
                     byte_txt = b''.join([byte_txt, fragment[i+1]])
-                if expected_seq_num == 0x00:
-                    expected_seq_num = 0x01
-                elif expected_seq_num == 0x01:
-                    expected_seq_num = 0x00
+                if seq_num == 0x00:
+                    seq_num = 0x01
+                elif seq_num == 0x01:
+                    seq_num = 0x00
                 received_packets += 1
                 print(received_packets)
                 #print(byte_txt)
@@ -114,13 +115,12 @@ def write(byte_txt):
       decompressed_bytes = None
       print("Error: Failed to decompress the batch.")
   
-  
 
 def tx(payload):
+  global seq_num
   total_packets_sent = 0
   packets_sent_ok = 0
   packets_sent_failed = 0
-  seq_num = 0x00
   try:
     for i in range(len(payload)):
       if(i%60==0):
