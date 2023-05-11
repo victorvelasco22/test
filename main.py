@@ -154,18 +154,14 @@ def tx_mode(filename, compressed_bytes_batches):
     led_manager(L3,On)
     #AQUI cridar les funcions necesaries per a executar el tx mode
     #radio = RF24(22, 0)
-
+    initSeqNum()
     #if not radio.begin():
     #    raise OSError("nRF24L01 hardware isn't responding")
     #radio_setup(12345, False)
     radioSetupTX()
-
     tx(frament_the_text(bytes(filename,'utf-16-le')))
     sleep(0.1)
-
     bytes_to_tx = frament_the_text(len(compressed_bytes_batches).to_bytes(31, byteorder='big'))
-
-    #bytes_to_tx = frament_the_text(bytes(str(len(compressed_bytes_batches)), 'utf-16-le'))
     tx(bytes_to_tx)
     sleep(0.1)
 
@@ -183,9 +179,7 @@ def tx_mode(filename, compressed_bytes_batches):
     #        #encendre un altre led
         sleep(0.1)
     led_manager(L2,On)
-      
     radioPowerOff()
-    
     while (GPIO.input(SW4)==True):
         sleep(0.2)
         continue
@@ -193,9 +187,10 @@ def tx_mode(filename, compressed_bytes_batches):
     led_manager(L3,Off)
         
 def rx_mode(): 
+    led_manager(L3,On)
+    initSeqNum()
     global filename_bytes
     os.system('sudo rm /home/rpi/textfile/file.txt')
-    led_manager(L3,On)
     radioSetupRX()
     filename_bytes = rx()
     print(filename_bytes)
