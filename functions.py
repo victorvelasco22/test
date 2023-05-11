@@ -43,7 +43,7 @@ def radioSetupTX():
   if not radio.begin():
       raise OSError("nRF24L01 hardware isn't responding")
   radio.setPALevel(2,1)
-  radio.setRetries(10,15)
+  radio.setRetries(2,15)
   radio.openWritingPipe(12345)
   radio.channel = 22
   radio.listen = False
@@ -73,10 +73,11 @@ def rx():
             buffer = radio.read()
             fragment = struct.unpack("<B31s",buffer)
             #print(fragment)
-            if fragment == EOF1 or fragment == EOF2:
-                eof = True
-            elif fragment[0] == expected_seq_num:
-                for i in range(len(fragment)-1):
+            if fragment[0] == expected_seq_num:
+                if fragment == EOF1 or fragment == EOF2:
+                  eof = True
+                if not eof:
+                  for i in range(len(fragment)-1):
                     byte_txt = b''.join([byte_txt, fragment[i+1]])
                 if expected_seq_num == 0x00:
                     expected_seq_num = 0x01
